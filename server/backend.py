@@ -4,6 +4,7 @@ from g4f import ChatCompletion
 from flask import request, Response, stream_with_context
 from requests import get
 from server.config import special_instructions
+import os
 
 
 class Backend_Api:
@@ -101,16 +102,29 @@ def fetch_search_results(query):
     :param query: Search query string
     :return: List of search results
     """
-    search = get('https://ddg-api.herokuapp.com/search',
-                 params={
-                     'query': query,
-                     'limit': 3,
-                 })
+    search_url = os.getenv('DDG_API_BASE','https://ddg-api.herokuapp.com/search');
+    if search_url =='https://ddg-api.herokuapp.com/search':
+        search = get(search_url,
+                    params={
+                        'query': query,
+                        'limit': 3,
+                    })
 
-    snippets = ""
-    for index, result in enumerate(search.json()):
-        snippet = f'[{index + 1}] "{result["snippet"]}" URL:{result["link"]}.'
-        snippets += snippet
+        snippets = ""
+        for index, result in enumerate(search.json()):
+            snippet = f'[{index + 1}] "{result["snippet"]}" URL:{result["link"]}.'
+            snippets += snippet
+    else:
+        search = get(search_url,
+                    params={
+                        'q': query,
+                        'max_results': 3,
+                    })
+
+        snippets = ""
+        for index, result in enumerate(search.json()):
+            snippet = f'[{index + 1}] "{result["body"]}" URL:{result["href"]}.'
+            snippets += snippet
     return [{'role': 'system', 'content': snippets}]
 
 
