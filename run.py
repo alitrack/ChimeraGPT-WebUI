@@ -4,6 +4,9 @@ from server.backend import Backend_Api
 from json import load
 from flask import Flask
 
+import os
+
+
 if __name__ == '__main__':
 
     # Load configuration from config.json
@@ -32,7 +35,8 @@ if __name__ == '__main__':
     # Create the app and register the blueprint
     app = Flask(__name__)
     app.register_blueprint(bp, url_prefix=url_prefix)
-
+    port = os.getenv('PORT',site_config['port'])
+    site_config['port'] = port
     # Run the Flask server
     print(f"Running on {site_config['port']}{url_prefix}")
     app.run(**site_config)
